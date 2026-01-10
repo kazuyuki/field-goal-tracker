@@ -20,12 +20,15 @@
     padding: 8px;
     text-align: center;
   }
-  th {
-    background: #eee;
-  }
-  input[type="number"], input[type="text"] {
+  th { background: #eee; }
+  input[type="text"] {
     width: 100px;
     padding: 4px;
+  }
+  .btn {
+    padding: 4px 8px;
+    margin: 0 2px;
+    cursor: pointer;
   }
   .total-row {
     background: #def;
@@ -41,19 +44,20 @@
   <thead>
     <tr>
       <th>Name</th>
-      <th>Attempt</th>
+      <th>Failed</th>
       <th>Made</th>
+      <th>Attempt</th>
       <th>FG%</th>
     </tr>
   </thead>
-  <tbody id="playerTable">
-    <!-- JavaScript で生成 -->
-  </tbody>
+  <tbody id="playerTable"></tbody>
+
   <tfoot>
     <tr class="total-row">
       <td>Total</td>
-      <td id="totalAttempt">0</td>
+      <td id="totalFailed">0</td>
       <td id="totalMade">0</td>
+      <td id="totalAttempt">0</td>
       <td id="totalFG">0%</td>
     </tr>
   </tfoot>
@@ -64,49 +68,84 @@
   const players=["ひよ","あいり","ゆいな","さゆみ","えりな","さほ","るな"];
   const tbody = document.getElementById("playerTable");
 
-  // 7人分の行を生成
+  // 行生成
   for (let i = 0; i < playerCount; i++) {
     const row = document.createElement("tr");
 
     row.innerHTML = `
-      <td><input type="text" value="` + players[i] + `" class="name"></td>
-      <td><input type="number" min="0" value="0" class="attempt"></td>
-      <td><input type="number" min="0" value="0" class="made"></td>
+      <td><input type="text" value="${players[i]}" class="name"></td>
+
+      <td>
+        <button class="btn minusFail">-</button>
+        <span class="failVal">0</span>
+        <button class="btn plusFail">+</button>
+      </td>
+
+      <td>
+        <button class="btn minusMade">-</button>
+        <span class="madeVal">0</span>
+        <button class="btn plusMade">+</button>
+      </td>
+
+      <td class="attemptVal">0</td>
       <td class="fg">0%</td>
     `;
 
     tbody.appendChild(row);
   }
 
-  // 入力イベントを監視して FG% を更新
+  // FG% と合計更新
   function updateStats() {
-    const attempts = document.querySelectorAll(".attempt");
-    const mades = document.querySelectorAll(".made");
-    const fgs = document.querySelectorAll(".fg");
+    const rows = document.querySelectorAll("#playerTable tr");
 
-    let totalAttempt = 0;
+    let totalFailed = 0;
     let totalMade = 0;
+    let totalAttempt = 0;
 
-    for (let i = 0; i < playerCount; i++) {
-      const att = Number(attempts[i].value);
-      const made = Number(mades[i].value);
+    rows.forEach(row => {
+      const failed = Number(row.querySelector(".failVal").textContent);
+      const made = Number(row.querySelector(".madeVal").textContent);
+      const attempt = failed + made;
 
-      totalAttempt += att;
+      row.querySelector(".attemptVal").textContent = attempt;
+
+      totalFailed += failed;
       totalMade += made;
+      totalAttempt += attempt;
 
-      const fg = att > 0 ? ((made / att) * 100).toFixed(1) : 0;
-      fgs[i].textContent = fg + "%";
-    }
+      const fg = attempt > 0 ? ((made / attempt) * 100).toFixed(1) : 0;
+      row.querySelector(".fg").textContent = fg + "%";
+    });
 
-    // チーム合計
-    document.getElementById("totalAttempt").textContent = totalAttempt;
+    document.getElementById("totalFailed").textContent = totalFailed;
     document.getElementById("totalMade").textContent = totalMade;
+    document.getElementById("totalAttempt").textContent = totalAttempt;
+
     const teamFG = totalAttempt > 0 ? ((totalMade / totalAttempt) * 100).toFixed(1) : 0;
     document.getElementById("totalFG").textContent = teamFG + "%";
   }
 
-  // 入力が変わるたびに更新
-  document.addEventListener("input", updateStats);
+  // ボタン操作
+  document.addEventListener("click", e => {
+    if (e.target.classList.contains("plusFail")) {
+      const span = e.target.parentNode.querySelector(".failVal");
+      span.textContent = Number(span.textContent) + 1;
+    }
+    if (e.target.classList.contains("minusFail")) {
+      const span = e.target.parentNode.querySelector(".failVal");
+      span.textContent = Math.max(0, Number(span.textContent) - 1);
+    }
+    if (e.target.classList.contains("plusMade")) {
+      const span = e.target.parentNode.querySelector(".madeVal");
+      span.textContent = Number(span.textContent) + 1;
+    }
+    if (e.target.classList.contains("minusMade")) {
+      const span = e.target.parentNode.querySelector(".madeVal");
+      span.textContent = Math.max(0, Number(span.textContent) - 1);
+    }
+
+    updateStats();
+  });
 </script>
 
 </body>
