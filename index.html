@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>Basketball FG% Tracker</title>
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    margin: 30px;
+    background: #f5f5f5;
+  }
+  h1 { margin-bottom: 10px; }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    background: white;
+  }
+  th, td {
+    border: 1px solid #ccc;
+    padding: 8px;
+    text-align: center;
+  }
+  th {
+    background: #eee;
+  }
+  input[type="number"], input[type="text"] {
+    width: 100px;
+    padding: 4px;
+  }
+  .total-row {
+    background: #def;
+    font-weight: bold;
+  }
+</style>
+</head>
+<body>
+
+<h1>🏀 FG% Tracker</h1>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Attempt</th>
+      <th>Made</th>
+      <th>FG%</th>
+    </tr>
+  </thead>
+  <tbody id="playerTable">
+    <!-- JavaScript で生成 -->
+  </tbody>
+  <tfoot>
+    <tr class="total-row">
+      <td>Total</td>
+      <td id="totalAttempt">0</td>
+      <td id="totalMade">0</td>
+      <td id="totalFG">0%</td>
+    </tr>
+  </tfoot>
+</table>
+
+<script>
+  const playerCount = 7;
+  const players=["ひよ","あいり","ゆいな","さゆみ","えりな","さほ","るな"];
+  const tbody = document.getElementById("playerTable");
+
+  // 7人分の行を生成
+  for (let i = 0; i < playerCount; i++) {
+    const row = document.createElement("tr");
+
+    row.innerHTML = `
+      <td><input type="text" value="` + players[i] + `" class="name"></td>
+      <td><input type="number" min="0" value="0" class="attempt"></td>
+      <td><input type="number" min="0" value="0" class="made"></td>
+      <td class="fg">0%</td>
+    `;
+
+    tbody.appendChild(row);
+  }
+
+  // 入力イベントを監視して FG% を更新
+  function updateStats() {
+    const attempts = document.querySelectorAll(".attempt");
+    const mades = document.querySelectorAll(".made");
+    const fgs = document.querySelectorAll(".fg");
+
+    let totalAttempt = 0;
+    let totalMade = 0;
+
+    for (let i = 0; i < playerCount; i++) {
+      const att = Number(attempts[i].value);
+      const made = Number(mades[i].value);
+
+      totalAttempt += att;
+      totalMade += made;
+
+      const fg = att > 0 ? ((made / att) * 100).toFixed(1) : 0;
+      fgs[i].textContent = fg + "%";
+    }
+
+    // チーム合計
+    document.getElementById("totalAttempt").textContent = totalAttempt;
+    document.getElementById("totalMade").textContent = totalMade;
+    const teamFG = totalAttempt > 0 ? ((totalMade / totalAttempt) * 100).toFixed(1) : 0;
+    document.getElementById("totalFG").textContent = teamFG + "%";
+  }
+
+  // 入力が変わるたびに更新
+  document.addEventListener("input", updateStats);
+</script>
+
+</body>
+</html>
